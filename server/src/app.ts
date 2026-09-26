@@ -15,13 +15,18 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const configuredMongoUri = process.env.MONGODB_URI?.trim();
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/taskflow_pro";
+  configuredMongoUri || "mongodb://127.0.0.1:27017/taskflow_pro";
 const isProduction = process.env.NODE_ENV === "production";
 const sessionSecret = process.env.SESSION_SECRET;
 
 if (isProduction && !sessionSecret) {
   throw new Error("SESSION_SECRET must be configured in production");
+}
+
+if (isProduction && !configuredMongoUri) {
+  throw new Error("MONGODB_URI must be configured in production");
 }
 
 if (isProduction) {

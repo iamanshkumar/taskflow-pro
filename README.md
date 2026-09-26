@@ -263,6 +263,16 @@ npm run dev
 
 The API listens at `http://localhost:5001`; health is available at `http://localhost:5001/api/health`.
 
+### Seed demo data
+
+From the `server/` directory, seed a demo account, workspace, and nine connected tasks:
+
+```sh
+npm run seed
+```
+
+Sign in at `/app` with `demo@taskflow.local` and `TaskflowDemo123!`. The seed script replaces tasks only in its dedicated demo workspace and refuses to run when `NODE_ENV=production`.
+
 ### Start the frontend
 
 In a second terminal:
@@ -284,19 +294,20 @@ The backend reads `server/.env` through dotenv.
 | Variable | Required | Description |
 |---|---|---|
 | `PORT` | No | API port; defaults to `5001`. |
-| `MONGODB_URI` | No | MongoDB URI; defaults to `mongodb://127.0.0.1:27017/taskflow_pro`. |
+| `MONGODB_URI` | Production | MongoDB URI. Local development defaults to `mongodb://127.0.0.1:27017/taskflow_pro`; production startup requires an explicit URI. |
 | `SESSION_SECRET` | Production | Session signing secret. The server refuses to start in production without it. |
-| `NODE_ENV` | No | Set to `production` for secure cookies and proxy handling. |
-| `COOKIE_SAME_SITE` | No | Defaults to `lax`. Set to `none` only when frontend and API are cross-site; HTTPS is then required. |
-| `CORS_ORIGIN` | No | Comma-separated exact frontend origin allowlist. Local Vite origins are allowed by default. |
+| `NODE_ENV` | Production | Set to `production` to enable secure cookies and trusted-proxy handling. |
+| `COOKIE_SAME_SITE` | No | Defaults to `lax`, suitable when the frontend and API are same-site. Use `none` only when they are on different sites; production cookies are then secure and require HTTPS. |
+| `CORS_ORIGIN` | Conditional | Comma-separated exact frontend origins. Set this when browser requests come from a different origin, including separate subdomains. Local Vite origins are allowed by default. |
 | `GEMINI_API_KEY` | No | Enables the Gemini AI suggestion provider. |
+| `GOOGLE_API_KEY` | No | Alternative environment variable for the Gemini provider. |
 | `OPENAI_API_KEY` | No | Enables the OpenAI AI suggestion provider when Gemini is not configured. |
 
 Do not commit `.env` files, session secrets, or provider keys.
 
 ## First Run
 
-TaskFlow does not require seeded accounts or demo data. Start the frontend and register through `/app`; registration creates the first user and a private workspace. Workspace owners can add other registered accounts from the workspace controls.
+Seeded demo data is optional. Start the frontend and register through `/app` to create an empty private workspace, or run `npm run seed` from `server/` and sign in with the demo account described in Local Development. Workspace owners can add other registered accounts from the workspace controls.
 
 ## Testing
 
@@ -324,9 +335,19 @@ The current test suite is primarily unit-level. Account creation, session persis
 - Sessions are stored in MongoDB and use an HTTP-only cookie with a seven-day maximum age.
 - Login and registration are rate-limited. The default limiter store is in-memory and must be replaced with a shared store for multi-instance deployments.
 - API routes verify active workspace membership and scope task-domain queries to that workspace.
-- Configure `SESSION_SECRET`, `CORS_ORIGIN`, `MONGODB_URI`, and HTTPS before deployment. If using `COOKIE_SAME_SITE=none`, set secure cookies and terminate TLS correctly behind the trusted proxy.
+- Configure production variables in the backend host dashboard:
+
+    ```env
+    NODE_ENV=production
+    SESSION_SECRET=<random value from openssl rand -hex 32>
+    MONGODB_URI=<production MongoDB connection string>
+    COOKIE_SAME_SITE=lax
+    CORS_ORIGIN=https://<frontend-origin>
+    ```
+
+    `SESSION_SECRET` and `MONGODB_URI` are required at startup. `CORS_ORIGIN` is needed when the frontend and API have different origins; use the exact origin (scheme and host, with no path). For a same-origin deployment it is not required. Separate subdomains are different origins for CORS but remain same-site, so `lax` is appropriate. For different sites, use `COOKIE_SAME_SITE=none`; production cookies are secure, so HTTPS and correctly configured TLS proxying are required. The server trusts one proxy hop in production.
 - Configure the static host to serve the SPA entry point for both `/` and `/app`.
-- Set the production `VITE_API_URL` before building the frontend.
+- Set the client build-time `VITE_API_URL` to the production API base URL before building the frontend.
 - Back up MongoDB. Workspace export is available as a JSON download, but import and automated restore are not implemented.
 - Do not expose the development session secret to the public internet.
 

@@ -9,6 +9,7 @@ import {
 import { requireAuth } from "../middleware/auth.middleware";
 
 const router = Router();
+// Move to a shared store (for example Redis) before running multiple backend instances.
 const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
