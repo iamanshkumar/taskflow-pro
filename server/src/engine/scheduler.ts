@@ -36,7 +36,7 @@ export function topologicalOrder(adjacency : AdjacencyMap , allIds : TaskId[]) :
     return order;
 }
 
-export function propogate(
+export function propagate(
   tasks: Map<TaskId, TaskNode>,
   adjacency: AdjacencyMap,
 ): Map<TaskId, Date> {

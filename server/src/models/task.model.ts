@@ -2,9 +2,11 @@ import { Schema, model, Document, Types } from "mongoose";
 
 export interface ITask extends Document {
   _id: Types.ObjectId;
+  workspaceId: Types.ObjectId;
   title: string;
   description: string;
   boardStatus: "Backlog" | "In Progress" | "Review" | "Done";
+  archivedAt: Date | null;
   startDate: Date;
   durationDays: number;
   dependsOn: Types.ObjectId[];
@@ -14,6 +16,11 @@ export interface ITask extends Document {
 
 const TaskSchema = new Schema<ITask>(
   {
+    workspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+    },
     title: {
       type: String,
       required: true,
@@ -29,6 +36,10 @@ const TaskSchema = new Schema<ITask>(
       type: String,
       enum: ["Backlog", "In Progress", "Review", "Done"],
       default: "Backlog",
+    },
+    archivedAt: {
+      type: Date,
+      default: null,
     },
     startDate: {
       type: Date,
@@ -51,15 +62,15 @@ const TaskSchema = new Schema<ITask>(
   },
 );
 
-TaskSchema.pre("save", function (next) {
+TaskSchema.pre("save", function () {
   const selfRef = this.dependsOn.some((id) => id.equals(this._id));
   if (selfRef) {
-    return next(new Error("A task cannot depend on itself"));
+    throw new Error("A task cannot depend on itself");
   }
-  next();
 });
 
 TaskSchema.index({ boardStatus: 1 });
 TaskSchema.index({ dependsOn: 1 });
+TaskSchema.index({ workspaceId: 1, boardStatus: 1 });
 
 export const Task = model<ITask>("Task", TaskSchema);

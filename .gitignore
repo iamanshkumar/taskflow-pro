@@ -26,5 +26,8 @@ pnpm-debug.log*
 # macOS
 .DS_Store
 
-# Local editor settings
-.vscode/
+# Local editor settings; keep shared extension recommendations trackable
+.vscode/*
+!.vscode/extensions.json
+
+.antigravity/

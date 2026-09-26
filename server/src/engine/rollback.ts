@@ -1,13 +1,9 @@
 import { TaskId, AdjacencyMap } from "./graph";
 
-export function handleStatusRegression(
+export function getDownstreamTaskIds(
   taskId: TaskId,
-  newStatus: string,
-  oldStatus: string,
   adjacency: AdjacencyMap,
 ): TaskId[] {
-  if (oldStatus !== "Done" || newStatus === "Done") return [];
-
   const affected: TaskId[] = [];
   const queue = [...(adjacency.get(taskId) ?? [])];
   const visited = new Set<TaskId>();
