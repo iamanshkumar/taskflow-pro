@@ -76,7 +76,9 @@ Workspace export returns a versioned JSON snapshot containing active and archive
 
 The server supplies the current workspace's active task titles to the configured provider. Results are matched against real task titles, de-duplicated, and checked for cycles before they are returned. Suggestions are advisory; accepting an existing-task suggestion calls the normal dependency API. Accept/reject decisions are stored in the `aisuggestionaudits` collection.
 
-If no provider key is configured or a provider call fails, the service uses a local keyword heuristic. The UI does not currently expose a searchable AI decision history or provider provenance.
+To try the advisor, create a few related tasks first, then open a new task, enter its title (and optionally a description), and select **Scan Prerequisites**. For example, with existing tasks named **Create database schema** and **Build API endpoints**, scan a new task named **Build UI**. Review the recommendations and choose **Accept** for each prerequisite you want to attach, or dismiss recommendations you do not want. Save the new task when finished. Suggestions are only proposed; they do not create dependencies until accepted.
+
+The advisor only recommends active tasks in the current workspace and filters out suggestions that do not match an existing task or would create a dependency cycle. If no plausible prerequisites are found, the UI reports that no recommendations were detected. If no provider key is configured or a provider call fails, the service uses a local keyword heuristic; this fallback is useful for a manual smoke test with matching titles such as **Build UI** and **Build API endpoints**. The UI does not currently expose a searchable AI decision history or provider provenance.
 
 ## User Workflows
 
