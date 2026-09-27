@@ -33,6 +33,8 @@ if (isProduction) {
   app.set("trust proxy", 1);
 }
 
+const databaseReady = connectDB(MONGODB_URI);
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
@@ -52,6 +54,15 @@ app.use(
 );
 
 app.use(express.json());
+app.use(async (_req, _res, next) => {
+  try {
+    await databaseReady;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use(
   session({
     name: "taskflow.sid",
@@ -98,7 +109,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-connectDB(MONGODB_URI)
+databaseReady
   .then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 TaskFlow Pro server running on http://localhost:${PORT}`);
