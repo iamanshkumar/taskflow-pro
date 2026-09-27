@@ -1,5 +1,12 @@
 {
     "rewrites": [
-      { "source": "/(.*)", "destination": "/index.html" }
+      {
+        "source": "/api/:path*",
+        "destination": "https://taskflow-pro-api-lp0b.onrender.com/api/:path*"
+      },
+      {
+        "source": "/(.*)",
+        "destination": "/index.html"
+      }
     ]
   }
