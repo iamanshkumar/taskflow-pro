@@ -7,6 +7,7 @@ The product is designed for projects where a flat task list is not enough: teams
 ## Contents
 
 - [Product overview](#product-overview)
+- [Key assumptions](#key-assumptions)
 - [Core concepts](#core-concepts)
 - [User workflows](#user-workflows)
 - [Architecture](#architecture)
@@ -35,6 +36,14 @@ TaskFlow Pro currently provides:
 - Date and duration propagation with non-compounding behavior on reconverging paths.
 - Critical Path Method (CPM) metrics and a DAG inspector.
 - Grounded AI dependency suggestions that require user approval.
+
+## Key Assumptions
+
+- Task durations are whole calendar days; partial-day scheduling is not supported.
+- Workspaces provide data isolation for small teams and are not designed as a large-scale multi-tenancy platform.
+- A workspace is expected to contain tasks in the tens rather than hundreds. Performance coverage includes a 50-task timing target for cycle detection; it is not a general load or capacity guarantee.
+- The AI advisor assumes task titles and descriptions are reasonably descriptive. Grounding prevents references to tasks that are not on the board, but it cannot guarantee that an otherwise valid recommendation is useful or correct.
+- Schedule calculations use calendar days and do not account for working calendars, weekends, or holidays.
 
 ## Core Concepts
 
@@ -287,7 +296,7 @@ npm run dev
 
 Open `http://localhost:5173/` for the product home page. Select **Open your workspace** to use `/app`, register, or sign in.
 
-Set `VITE_API_URL` in a client `.env` file when the API is not at `http://localhost:5001/api`. This value is embedded at client build time.
+For local development, the client defaults to `http://localhost:5001/api`. In production, it defaults to the same-origin `/api` path, which can be forwarded to the backend by the hosting platform. Set `VITE_API_URL` only when intentionally using a different API base URL; the value is embedded at client build time.
 
 ## Configuration
 
@@ -349,7 +358,7 @@ The current test suite is primarily unit-level. Account creation, session persis
 
     `SESSION_SECRET` and `MONGODB_URI` are required at startup. `CORS_ORIGIN` is needed when the frontend and API have different origins; use the exact origin (scheme and host, with no path). For a same-origin deployment it is not required. Separate subdomains are different origins for CORS but remain same-site, so `lax` is appropriate. For different sites, use `COOKIE_SAME_SITE=none`; production cookies are secure, so HTTPS and correctly configured TLS proxying are required. The server trusts one proxy hop in production.
 - Configure the static host to serve the SPA entry point for both `/` and `/app`.
-- Set the client build-time `VITE_API_URL` to the production API base URL before building the frontend.
+- The production client defaults to `/api`; configure a Vercel rewrite or equivalent same-origin proxy to forward that path to the backend. Set `VITE_API_URL` only when choosing a different API base URL.
 - Back up MongoDB. Workspace export is available as a JSON download, but import and automated restore are not implemented.
 - Do not expose the development session secret to the public internet.
 
