@@ -189,12 +189,14 @@ export function logout(req: Request, res: Response): void {
       return;
     }
 
+    const sameSite =
+      process.env.COOKIE_SAME_SITE?.trim().toLowerCase() === "none"
+        ? "none"
+        : "lax";
     res.clearCookie("taskflow.sid", {
       httpOnly: true,
-      secure:
-        process.env.NODE_ENV === "production" ||
-        process.env.COOKIE_SAME_SITE === "none",
-      sameSite: process.env.COOKIE_SAME_SITE === "none" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production" || sameSite === "none",
+      sameSite,
     });
     res.status(204).end();
   });

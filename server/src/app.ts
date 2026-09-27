@@ -39,8 +39,15 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
-  ...(process.env.CORS_ORIGIN?.split(",").map((origin) => origin.trim()) ?? []),
+  ...(process.env.CORS_ORIGIN?.split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean) ?? []),
 ];
+
+const cookieSameSite =
+  process.env.COOKIE_SAME_SITE?.trim().toLowerCase() === "none"
+    ? "none"
+    : "lax";
 
 app.use(
   cors({
@@ -75,8 +82,8 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      secure: isProduction || process.env.COOKIE_SAME_SITE === "none",
-      sameSite: process.env.COOKIE_SAME_SITE === "none" ? "none" : "lax",
+      secure: isProduction || cookieSameSite === "none",
+      sameSite: cookieSameSite,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   }),
